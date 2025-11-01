@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,9 +12,54 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _controller = TextEditingController();
   bool _isExpanded = false;
-  bool _isWeatherExpanded = false; // 👈 added for expandable weather
+  bool _isWeatherExpanded = false;
 
   List<Map<String, dynamic>> _entries = [];
+
+  // Weather variables
+  String _temperature = "--";
+  String _condition = "Loading...";
+  String _feelsLike = "--";
+  String _wind = "--";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchWeather();
+  }
+
+  Future<void> _fetchWeather() async {
+    try {
+      // Example: Manila lat/lon (you can replace with geolocator later)
+      const double lat = 14.5995;
+      const double lon = 120.9842;
+
+      final url = Uri.parse(
+          "https://api.open-meteo.com/v1/forecast?latitude=$lat&longitude=$lon&current_weather=true");
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        setState(() {
+          final weather = data['current_weather'];
+          _temperature = "${weather['temperature']}°C";
+          _condition = "Condition code: ${weather['weathercode']}";
+          _feelsLike = "${weather['temperature'] + 2}°C"; // fake feels like
+          _wind = "${weather['windspeed']} km/h";
+        });
+      } else {
+        setState(() {
+          _condition = "Error fetching weather";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _condition = "Failed to load weather";
+      });
+    }
+  }
 
   void _saveEntry() {
     if (_controller.text.trim().isEmpty) return;
@@ -105,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 12),
 
-            // Weather Card (Expandable)
+            // Weather Card (Expandable with API Data)
             GestureDetector(
               onTap: () {
                 setState(() {
@@ -122,25 +169,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Rainy Today", style: TextStyle(color: Colors.purpleAccent)),
-                            Text("Monday, July 7", style: TextStyle(color: Colors.white)),
+                            Text("Today's Weather",
+                                style: const TextStyle(color: Colors.purpleAccent)),
+                            Text(DateTime.now().toLocal().toString().split(" ")[0],
+                                style: const TextStyle(color: Colors.white)),
                           ],
                         ),
-                        Icon(Icons.cloud, color: Colors.blueAccent),
+                        const Icon(Icons.cloud, color: Colors.blueAccent),
                       ],
                     ),
                     if (_isWeatherExpanded) ...[
                       const SizedBox(height: 12),
-                      const Text("Temperature: 27°C", style: TextStyle(color: Colors.white)),
-                      const Text("Condition: Fair", style: TextStyle(color: Colors.white)),
-                      const Text("Feels like: 31°C", style: TextStyle(color: Colors.white)),
-                      const Text("Wind: North wind scale", style: TextStyle(color: Colors.white)),
+                      Text("Temperature: $_temperature",
+                          style: const TextStyle(color: Colors.white)),
+                      Text("Condition: $_condition",
+                          style: const TextStyle(color: Colors.white)),
+                      Text("Feels like: $_feelsLike",
+                          style: const TextStyle(color: Colors.white)),
+                      Text("Wind: $_wind",
+                          style: const TextStyle(color: Colors.white)),
                     ],
                   ],
                 ),

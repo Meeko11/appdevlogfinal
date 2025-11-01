@@ -1,8 +1,34 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/homescreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_application_1/main_navigation_screen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  File? _userImage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserImage();
+  }
+
+  Future<void> _loadUserImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final imagePath = prefs.getString('userImage');
+
+    if (imagePath != null && File(imagePath).existsSync()) {
+      setState(() {
+        _userImage = File(imagePath);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +41,17 @@ class LoginScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Profile Image at the top
+                CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Colors.grey[700],
+                  backgroundImage: _userImage != null ? FileImage(_userImage!) : null,
+                  child: _userImage == null
+                      ? const Icon(Icons.person, size: 60, color: Colors.white)
+                      : null,
+                ),
+                const SizedBox(height: 20),
+
                 Text(
                   "Let's get started",
                   style: TextStyle(
@@ -29,7 +66,7 @@ class LoginScreen extends StatelessWidget {
                 TextField(
                   decoration: InputDecoration(
                     labelText: 'Username:',
-                    labelStyle: TextStyle(color: Colors.white70),
+                    labelStyle: const TextStyle(color: Colors.white70),
                     filled: true,
                     fillColor: Colors.transparent,
                     enabledBorder: OutlineInputBorder(
@@ -38,7 +75,8 @@ class LoginScreen extends StatelessWidget {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
-                      borderSide: const BorderSide(color: Colors.lightBlueAccent),
+                      borderSide:
+                          const BorderSide(color: Colors.lightBlueAccent),
                     ),
                   ),
                   style: const TextStyle(color: Colors.white),
@@ -50,7 +88,7 @@ class LoginScreen extends StatelessWidget {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Password:',
-                    labelStyle: TextStyle(color: Colors.white70),
+                    labelStyle: const TextStyle(color: Colors.white70),
                     filled: true,
                     fillColor: Colors.transparent,
                     enabledBorder: OutlineInputBorder(
@@ -59,23 +97,27 @@ class LoginScreen extends StatelessWidget {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
-                      borderSide: const BorderSide(color: Colors.lightBlueAccent),
+                      borderSide:
+                          const BorderSide(color: Colors.lightBlueAccent),
                     ),
                   ),
                   style: const TextStyle(color: Colors.white),
                 ),
                 const SizedBox(height: 30),
 
-                // Login button
+                // Login Button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                       Navigator.pushReplacement(
+                      Navigator.pushReplacement(
                         context,
-                           MaterialPageRoute(builder: (context) => const HomeScreen()),
-                       ) ;
-                     },
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const MainNavigationScreen(), // Go to nav bar
+                        ),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.lightBlueAccent,
                       foregroundColor: Colors.white,
@@ -89,7 +131,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 15),
 
-                // Register button
+                // Register Button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -109,7 +151,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 15),
 
-                // Forgot password button
+                // Forgot Password Button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(

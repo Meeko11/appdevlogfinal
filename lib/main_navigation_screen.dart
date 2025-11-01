@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/aboutscreen.dart';
-import 'package:flutter_application_1/homescreen.dart'; 
+import 'package:flutter_application_1/homescreen.dart';
+import 'package:flutter_application_1/time_capsule.dart'; // 👈 Import your capsule screen
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -10,32 +11,78 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int _currentIndex = 0;
+  int _currentIndex = 1; // Start with Home selected
 
   final List<Widget> _screens = const [
-    HomeScreen(),
-    Placeholder(),       
-    AboutScreen(),       
+    TimeCapsuleScreen(), // 👈 Capsule screen (first tab)
+    HomeScreen(),        // Home screen (middle tab)
+    AboutScreen(),       // About screen (last tab)
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        backgroundColor: const Color(0xFF063851),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white60,
-        onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.lock_clock), label: 'Capsule'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'About'),
-        ],
+      extendBody: true,
+      body: _screens[_currentIndex],
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
+        child: Container(
+          height: 70,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(40),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // Capsule button
+              IconButton(
+                tooltip: "Capsule",
+                icon: Icon(
+                  Icons.medication, // capsule-like icon
+                  color: _currentIndex == 0
+                      ? const Color(0xFF063851)
+                      : Colors.grey[500],
+                  size: 28,
+                ),
+                onPressed: () => setState(() => _currentIndex = 0),
+              ),
+
+              // Home button in middle
+              IconButton(
+                tooltip: "Home",
+                icon: Icon(
+                  Icons.home,
+                  color: _currentIndex == 1
+                      ? const Color(0xFF063851)
+                      : Colors.grey[500],
+                  size: 30,
+                ),
+                onPressed: () => setState(() => _currentIndex = 1),
+              ),
+
+              // About button
+              IconButton(
+                tooltip: "About",
+                icon: Icon(
+                  Icons.info,
+                  color: _currentIndex == 2
+                      ? const Color(0xFF063851)
+                      : Colors.grey[500],
+                  size: 28,
+                ),
+                onPressed: () => setState(() => _currentIndex = 2),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
