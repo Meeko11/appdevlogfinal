@@ -5,7 +5,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_application_1/main_navigation_screen.dart'; // ✅ use the navigation screen
+import 'package:flutter_application_1/main_navigation_screen.dart';
+import 'auth/auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +18,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   File? _imageFile;
   Uint8List? _webImageBytes;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   @override
   void initState() {
@@ -82,10 +85,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 30),
 
-                // Username
                 TextField(
                   decoration: InputDecoration(
-                    labelText: 'Username:',
+                    labelText: 'Email Address:',
                     labelStyle: const TextStyle(color: Colors.white70),
                     filled: true,
                     fillColor: Colors.transparent,
@@ -99,10 +101,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   style: const TextStyle(color: Colors.white),
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 20),
 
-                // Password
                 TextField(
                   obscureText: true,
                   decoration: InputDecoration(
@@ -120,6 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   style: const TextStyle(color: Colors.white),
+                  controller: _passwordController,
                 ),
                 const SizedBox(height: 30),
 
@@ -127,13 +131,29 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const MainNavigationScreen(), // ✅ nav bar
-                        ),
-                      );
+                    onPressed: () async {
+                      final email = _emailController.text.trim();
+                      final password = _passwordController.text.trim();
+                      if (email.isEmpty || password.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Enter email and password')),
+                        );
+                        return;
+                      }
+                      try {
+                        await appAuth.value.signIn(email: email, password: password);
+                        if (!mounted) return;
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MainNavigationScreen(),
+                          ),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(e.toString())),
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.lightBlueAccent,

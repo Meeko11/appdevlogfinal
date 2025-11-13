@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'auth/auth.dart';
 
 class TimeCapsuleScreen extends StatefulWidget {
   const TimeCapsuleScreen({super.key});
@@ -13,6 +15,39 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
   int years = 0;
   int months = 0;
   int weeks = 0;
+
+  Future<bool> _saveCapsule() async {
+    final uid = appAuth.value.currentUser?.uid;
+    final content = _controller.text.trim();
+    if (uid == null || content.isEmpty) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in and enter content')),
+      );
+      return false;
+    }
+    try {
+      final now = DateTime.now();
+      final base = now.add(Duration(days: weeks * 7));
+      final openAt = DateTime(base.year + years, base.month + months, base.day);
+      await FirebaseFirestore.instance.collection('capsules').add({
+        'uid': uid,
+        'content': content,
+        'years': years,
+        'months': months,
+        'weeks': weeks,
+        'createdAt': FieldValue.serverTimestamp(),
+        'openAt': Timestamp.fromDate(openAt),
+      });
+      return true;
+    } catch (e) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save: $e')),
+      );
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +179,7 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
   void _showConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         content: const Text(
           "Are you sure you want to save? It can’t be undone once you press yes. "
@@ -160,10 +195,13 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: () {
-              Navigator.pop(context); // close dialog
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+              final ok = await _saveCapsule();
+              if (!mounted) return;
+              if (!ok) return;
               Navigator.push(
-                context,
+                this.context,
                 MaterialPageRoute(
                   builder: (context) => CapsuleResultScreen(
                     years: years,
@@ -183,9 +221,22 @@ class _TimeCapsuleScreenState extends State<TimeCapsuleScreen> {
               ),
             ),
             onPressed: () {
-              Navigator.pop(context); // just close
+              Navigator.pop(dialogContext); // just close
             },
             child: const Text("No"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              Navigator.pop(this.context);
+            },
+            child: const Text("Exit"),
           ),
         ],
       ),
@@ -254,7 +305,7 @@ class CapsuleResultScreen extends StatelessWidget {
             children: [
               const CircleAvatar(
                 radius: 50,
-                backgroundImage: AssetImage("assets/profile.jpg"), // change this
+                backgroundImage: AssetImage("assets/time_capsule.png"),
               ),
               const SizedBox(height: 10),
               const Text(
@@ -280,6 +331,21 @@ class CapsuleResultScreen extends StatelessWidget {
                 "time remaining\nwait to open",
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[400],
+                  foregroundColor: Colors.black,
+                  minimumSize: const Size(120, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text("Exit"),
               ),
             ],
           ),

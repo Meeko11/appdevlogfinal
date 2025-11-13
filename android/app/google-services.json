@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "581648539380",
+    "project_id": "timeless-c8176",
+    "storage_bucket": "timeless-c8176.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:581648539380:android:dcda56e1b3a8b6788a88a1",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAhJqQyUdSk7IaYr0OV75ypurBEGUoiSI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

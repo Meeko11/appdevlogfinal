@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
+import 'auth/auth.dart';
 
-class ForgotPasswordScreen extends StatelessWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
+
+  @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final TextEditingController _emailController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +43,6 @@ class ForgotPasswordScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
 
-                // Email input
                 TextField(
                   decoration: InputDecoration(
                     labelText: 'Enter your email:',
@@ -53,6 +60,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                   ),
                   style: const TextStyle(color: Colors.white),
                   keyboardType: TextInputType.emailAddress,
+                  controller: _emailController,
                 ),
                 const SizedBox(height: 20),
 
@@ -81,8 +89,24 @@ class ForgotPasswordScreen extends StatelessWidget {
                 Row(
                   children: [
                     ElevatedButton(
-                      onPressed: () {
-                        // TODO: Add your "get code" logic here
+                      onPressed: () async {
+                        final email = _emailController.text.trim();
+                        if (email.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Enter your email')),
+                          );
+                          return;
+                        }
+                        try {
+                          await appAuth.value.sendPasswordResetEmail(email: email);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Password reset email sent')),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.toString())),
+                          );
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.lightBlueAccent,

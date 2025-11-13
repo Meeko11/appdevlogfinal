@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart.dart';
+import 'login_screen.dart';
 import 'register_screen.dart';
 import 'forgotpasswordscreen.dart';
 import 'resetpasswordscreen.dart';
-import 'main_navigation_screen.dart'; 
+import 'main_navigation_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 

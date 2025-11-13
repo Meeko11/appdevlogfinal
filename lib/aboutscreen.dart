@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'login_screen.dart.dart'; // fixed import
+import 'login_screen.dart';
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});

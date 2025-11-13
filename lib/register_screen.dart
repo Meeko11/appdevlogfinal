@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
+import 'auth/auth.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,6 +20,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   File? _imageFile;
   Uint8List? _webImageBytes;
   final ImagePicker _picker = ImagePicker();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmController = TextEditingController();
 
   @override
   void initState() {
@@ -167,7 +172,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 30),
 
-                // Email
+                TextField(
+                  decoration: InputDecoration(
+                    labelText: 'Username:',
+                    labelStyle: const TextStyle(color: Colors.white70),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: const BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: const BorderSide(color: Colors.lightBlueAccent),
+                    ),
+                  ),
+                  style: const TextStyle(color: Colors.white),
+                  controller: _usernameController,
+                ),
+                const SizedBox(height: 20),
+
                 TextField(
                   decoration: InputDecoration(
                     labelText: 'Email Address:',
@@ -182,10 +204,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   style: const TextStyle(color: Colors.white),
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 20),
 
-                // Password
                 TextField(
                   obscureText: true,
                   decoration: InputDecoration(
@@ -201,10 +224,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   style: const TextStyle(color: Colors.white),
+                  controller: _passwordController,
                 ),
                 const SizedBox(height: 20),
 
-                // Confirm Password
                 TextField(
                   obscureText: true,
                   decoration: InputDecoration(
@@ -220,15 +243,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                   style: const TextStyle(color: Colors.white),
+                  controller: _confirmController,
                 ),
                 const SizedBox(height: 30),
 
-                // Sign Up Button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, '/login');
+                    onPressed: () async {
+                      final username = _usernameController.text.trim();
+                      final email = _emailController.text.trim();
+                      final password = _passwordController.text.trim();
+                      final confirm = _confirmController.text.trim();
+                      if (username.isEmpty || email.isEmpty || password.isEmpty || confirm.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Fill all fields')),
+                        );
+                        return;
+                      }
+                      if (password != confirm) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Passwords do not match')),
+                        );
+                        return;
+                      }
+                      try {
+                        await appAuth.value.createAccount(email: email, password: password, username: username);
+                        if (!mounted) return;
+                        Navigator.pushReplacementNamed(context, '/login');
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(e.toString())),
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.lightBlueAccent,
